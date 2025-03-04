@@ -51,12 +51,20 @@ if __name__ == '__main__':
     print('Model and tokenizer loaded.')
 
     img_path = args.img
+    print(f"模型加载完成，等待图片 {img_path} ...")
+
+    while not os.path.exists(img_path):
+        pass  # 等待图片文件出现
+
+    print(f"检测到图片 {img_path}，继续运行...")
     img = cv.imread(img_path)
     print('Inference...')
     if not args.mix:
         res = latex_inference(latex_rec_model, tokenizer, [img], args.inference_mode, args.num_beam)
         res = to_katex(res[0])
         print(res)
+        with open("output.txt", "w", encoding="utf-8") as f:
+            print(res,file=f)
     else:
         infer_config = PredictConfig("./models/det_model/model/infer_cfg.yml")
         latex_det_model = InferenceSession("./models/det_model/model/rtdetr_r50vd_6x_coco.onnx")
@@ -82,4 +90,5 @@ if __name__ == '__main__':
         lang_ocr_models = [detector, recognizer]
         latex_rec_models = [latex_rec_model, tokenizer]
         res = mix_inference(img_path, infer_config, latex_det_model, lang_ocr_models, latex_rec_models, args.inference_mode, args.num_beam)
-        print(res)
+        with open("output.txt", "w", encoding="utf-8") as f:
+            print(res)
