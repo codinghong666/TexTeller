@@ -278,10 +278,11 @@ import re
 import base64
 import tempfile
 import shutil
+import sympy as sp
+from sympy.parsing.latex import parse_latex
 import streamlit as st
 from PIL import Image
 from streamlit_drawable_canvas import st_canvas
-
 from models.ocr_model.model.TexTeller import TexTeller
 from models.ocr_model.utils.inference import inference as latex_recognition
 from models.ocr_model.utils.to_katex import to_katex
@@ -338,18 +339,35 @@ if st.button("🖌 Recognize Formula"):
                 texteller,
                 tokenizer,
                 [img_path],
-                accelerator="cpu",  # 你可以修改为 "cuda" 以使用 GPU
+                accelerator="mps",  # 你可以修改为 "cuda" 以使用 GPU
                 num_beams=3
             )[0]
 
             # 转换为 KaTeX 可用格式
             katex_res = to_katex(latex_result)
             print(katex_res)
-            # 显示结果
-            st.success("✅ Recognition Completed!")
-            st.text_area("📝 LaTeX Output", katex_res, height=100)
-            st.latex(katex_res)
+            latex_prs = parse_latex(katex_res)
+            if "\int" in str(katex_res):
+                symbolic_result = sp.integrate(latex_prs.args[0],latex_prs.args[1])
+                print(str(latex_prs.args[1]))
+                st.success("✅ Recognition Completed!")
+                C=""
+                if str(latex_prs.args[1]).count(",")==1:
+                    C="+ C"
+                st.latex(katex_res+"="+str(sp.latex(symbolic_result)).replace("log","ln")+C)
+                st.text_area("📝 LaTeX Output", katex_res+"="+str(sp.latex(symbolic_result)).replace("log","ln")+C, height=100)
+            elif "Limit" in str(katex_res):
+                st.success("✅ Recognition Completed!")
+                limit_function = latex_prs.args[0]
+                limit_variable = latex_prs.args[1]
+                limit_point = latex_prs.args[2]
+                result = sp.limit(limit_function, limit_variable, limit_point)
+                # st.success("✅ Recognition Completed!")
+                # st.text_area("📝 LaTeX Output", katex_res, height=100)
+                st.latex(katex_res + "=" + str(sp.latex(result)).replace("log","ln"))
+                st.text_area("📝 LaTeX Output", katex_res + "=" + str(sp.latex(result)).replace("log","ln"), height=100)
 
+            print(type(latex_prs))
             shutil.rmtree(temp_dir)  # 清理临时文件
     else:
         st.warning("❗ Please draw something before clicking recognize.")
