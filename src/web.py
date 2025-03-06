@@ -343,30 +343,61 @@ if st.button("🖌 Recognize Formula"):
                 num_beams=3
             )[0]
 
-            # 转换为 KaTeX 可用格式
+            # # 转换为 KaTeX 可用格式
+            # katex_res = to_katex(latex_result)
+            # print(katex_res)
+            # latex_prs = parse_latex(katex_res)
+            # firstline,secondline="",""
+            # if "\int" in str(katex_res):
+            #     symbolic_result = sp.integrate(latex_prs.args[0],latex_prs.args[1])
+            #     print(str(latex_prs.args[1]))
+            #     st.success("✅ Recognition Completed!")
+            #     C=""
+            #     if str(latex_prs.args[1]).count(",")==1:
+            #         C="+ C"
+            #     st.latex(katex_res+"="+str(sp.latex(symbolic_result)).replace("log","ln")+C)
+            #     st.text_area("📝 LaTeX Output", katex_res+"="+str(sp.latex(symbolic_result)).replace("log","ln")+C, height=100)
+            # elif "\lim" in str(katex_res):
+            #     st.success("✅ Recognition Completed!")
+            #     limit_function = latex_prs.args[0]
+            #     limit_variable = latex_prs.args[1]
+            #     limit_point = latex_prs.args[2]
+            #     result = sp.limit(limit_function, limit_variable, limit_point)
+            #     st.latex(katex_res + "=" + str(sp.latex(result)).replace("log","ln"))
+            #     st.text_area("📝 LaTeX Output", katex_res + "=" + str(sp.latex(result)).replace("log","ln"), height=100)
+            # elif isinstance(latex_prs, sp.Derivative ):
+            #     print("Derivative")
+            #     st.success("✅ Recognition Completed!")
+            #     st.latex(katex_res + "=" + str(sp.latex(sp.diff(latex_prs.args[0],latex_prs.args[1]))))
+            #     st.text_area("📝 LaTeX Output", katex_res + "=" + str(sp.diff(latex_prs.args[0],latex_prs.args[1])), height=100)
+            #     print(sp.diff(latex_prs.args[0],latex_prs.args[1]))
+            # print(type(latex_prs))
+
+      # 转换为 KaTeX 可用格式
             katex_res = to_katex(latex_result)
             print(katex_res)
             latex_prs = parse_latex(katex_res)
+            firstline,secondline="",""
             if "\int" in str(katex_res):
-                symbolic_result = sp.integrate(latex_prs.args[0],latex_prs.args[1])
-                print(str(latex_prs.args[1]))
-                st.success("✅ Recognition Completed!")
                 C=""
                 if str(latex_prs.args[1]).count(",")==1:
                     C="+ C"
-                st.latex(katex_res+"="+str(sp.latex(symbolic_result)).replace("log","ln")+C)
-                st.text_area("📝 LaTeX Output", katex_res+"="+str(sp.latex(symbolic_result)).replace("log","ln")+C, height=100)
-            elif "Limit" in str(katex_res):
-                st.success("✅ Recognition Completed!")
-                limit_function = latex_prs.args[0]
-                limit_variable = latex_prs.args[1]
-                limit_point = latex_prs.args[2]
-                result = sp.limit(limit_function, limit_variable, limit_point)
-                # st.success("✅ Recognition Completed!")
-                # st.text_area("📝 LaTeX Output", katex_res, height=100)
-                st.latex(katex_res + "=" + str(sp.latex(result)).replace("log","ln"))
-                st.text_area("📝 LaTeX Output", katex_res + "=" + str(sp.latex(result)).replace("log","ln"), height=100)
-
+                symbolic_result=str(sp.latex(sp.integrate(latex_prs.args[0],latex_prs.args[1])))
+                firstline = katex_res+"="+symbolic_result+C
+                secondline=katex_res+"="+str(sp.latex(symbolic_result))+C
+            elif "\lim" in str(katex_res):
+                symbolic_result = sp.limit(latex_prs.args[0] ,latex_prs.args[1], latex_prs.args[2])
+                firstline=katex_res + "=" + str(sp.latex(symbolic_result))
+                secondline=katex_res + "=" + str(sp.latex(symbolic_result))
+            elif isinstance(latex_prs, sp.Derivative ):
+                print("Derivative")
+                firstline=katex_res + "=" + str(sp.latex(sp.diff(latex_prs.args[0],latex_prs.args[1])))
+                secondline=katex_res + "=" + str(sp.diff(latex_prs.args[0],latex_prs.args[1]))
+            firstline=str(firstline).replace("log","ln")
+            secondline=str(secondline).replace("log","ln")
+            st.success("✅ Recognition Completed!")
+            st.latex(firstline)
+            st.text_area("📝 LaTeX Output", secondline, height=100)
             print(type(latex_prs))
             shutil.rmtree(temp_dir)  # 清理临时文件
     else:
