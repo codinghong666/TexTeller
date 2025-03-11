@@ -17,3 +17,5 @@ streamlit-paste-button
 shapely
 pyclipper
 onnxruntime-gpu
+sympy
+flask

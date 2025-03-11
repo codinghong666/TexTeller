@@ -14,13 +14,13 @@ from models.ocr_model.utils.inference import inference as latex_recognition
 from models.ocr_model.utils.to_katex import to_katex
 
 st.set_page_config(
-    page_title="TexTeller Handwriting",
+    page_title="Handwriting Math Recognition",
     page_icon="✍️"
 )
 
 # 显示标题
 st.markdown("""
-    <h1 style="text-align: center;">🖋 TexTeller - Handwriting Math Recognition</h1>
+    <h1 style="text-align: center;">🖋 Handwriting Math Recognition</h1>
     <p style="text-align: center; font-size: 18px;">Draw your math formula below and get LaTeX output!</p>
 """, unsafe_allow_html=True)
 
@@ -65,7 +65,7 @@ if st.button("🖌 Recognize Formula"):
                 texteller,
                 tokenizer,
                 [img_path],
-                accelerator="mps",  # 你可以修改为 "cuda" 以使用 GPU
+                accelerator="cpu",  # 你可以修改为 "cuda" 以使用 GPU
                 num_beams=3
             )[0]
 
